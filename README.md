@@ -1,0 +1,1 @@
+# closeio-helpscout-integration
