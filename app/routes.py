@@ -48,5 +48,9 @@ def index2():
     contact = { 'emails': [{'email': request.args.get("email")}]}
     contact['name'] = "%s %s" % (request.args.get("fname"), request.args.get("lname"))
     lead = { 'contacts': [contact] }
-    resp = api.post('lead', data=lead)
-    return redirect("https://app.close.io/lead/%s/" % resp['id'], code=302) 
+    try:
+        resp = api.post('lead', data=lead)
+        return redirect("https://app.close.io/lead/%s/" % resp['id'], code=302)
+    except APIError as e:
+        # This will bring Close.io to an error page if lead creation fails
+        return redirect("https://app.close.io/lead//", code=302)
