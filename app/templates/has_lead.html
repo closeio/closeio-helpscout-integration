@@ -1,0 +1,55 @@
+{# Modify this template to change what is displayed in Help Scout #}
+<h4><a href="https://admin.close.io/lead/{{id}}/">{{display_name}}</a></h4>
+<div class="c-sb-section c-sb-section--toggle c-sb-section--toggle--nested">
+    <div class="c-sb-section__title js-sb-toggle">
+      Lead Information <i class="caret sb-caret"></i>
+    </div>
+    <div class="c-sb-section__body">
+<ul class="c-sb-list c-sb-list--two-line">
+  <li class="c-sb-list-item">
+    <span class="c-sb-list-item__label">
+    Description
+      <span class="c-sb-list-item__text">{{description}}</span>
+    </span>
+  </li>
+  <li class="c-sb-list-item">
+    <span class="c-sb-list-item__label">
+    Lead Status
+      <span class="blue badge">{{status_label}}</span>
+    </span>
+  </li>
+  <li class="c-sb-list-item">
+    <span class="c-sb-list-item__label">
+      Lead URL
+      <span class="c-sb-list-item__text">{{url}}</span>
+    </span>
+  </li>
+  {% if contacts|length > 0 and contacts[0]['emails']|length > 0 %}
+    {% set cont = contacts[0] %}
+  <li class="c-sb-list-item">
+    <span class="c-sb-list-item__label">
+      Primary Contact Email
+      <span class="c-sb-list-item__text">{{cont['name']}} - {{cont['emails'][0]['email']}}</span>
+    </span>
+  </li>
+  {% endif %}
+</ul>
+</div>
+</div>
+<div class="c-sb-section c-sb-section--toggle c-sb-section--toggle--nested">
+    <div class="c-sb-section__title js-sb-toggle">
+      Custom Fields <i class="caret sb-caret"></i>
+    </div>
+    <div class="c-sb-section__body">
+<ul class="c-sb-list c-sb-list--two-line">
+    {% for cust_name in custom %}
+    <li class="c-sb-list-item">
+      <span class="c-sb-list-item__label">
+        {{cust_name}}
+        <span class="c-sb-list-item__text">{{custom[cust_name]}}</span>
+      </span>
+    </li>
+    {% endfor %}
+</ul>
+</div>
+</div>
