@@ -22,12 +22,12 @@ def index():
         data = json.loads(request.data)
     except ValueError:
         return '', 400
-    else:
-        email = data['customer']['email']
+    email = data['customer']['email']
     if email == "":
         return jsonify({ 'html': '<span style="color:red;">Cannot pull data</span>' })
     else:
         try:
+            print request.headers
             resp = api.get('lead', params={ 'query': 'email_address:"%s" sort:-"Monthly Billable Amount"' % email })
         except APIError as e:
             return jsonify({ 'html': '<span style="color:red;">There was a Close.io API Error</span>' })
@@ -45,6 +45,7 @@ def index():
 # Create Lead Route
 @app.route('/create-lead/', methods=['GET'])
 def index2():
+    print request.headers
     contact = { 'emails': [{'email': request.args.get("email")}]}
     contact['name'] = "%s %s" % (request.args.get("fname"), request.args.get("lname"))
     lead = { 'contacts': [contact] }
