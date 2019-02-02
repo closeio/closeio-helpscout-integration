@@ -2,39 +2,41 @@ import os
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from app import app
 import json
-from closeio_api import Client as CloseIO_API, APIError
-
-# Close.io API Initialization
-api = CloseIO_API(os.environ['api_key'])
-# Get all users in an org
-org_id = api.get('api_key/' + os.environ['api_key'])['organization_id']
-org = api.get('organization/' + org_id)
-memberships = [i for i in org['memberships']] + [i for i in org['inactive_memberships']]
-users = {}
-for member in memberships:
-    users[member['user_id']] = member['user_full_name']
-
+import requests
 
 @app.route('/', methods=['POST'])
 def index():
+    headers = {'Content-Type': 'application/json', 'Authorization': 'Basic %s' % request.headers.get('X-Helpscout-Signature')}
     email = ""
     try:
         data = json.loads(request.data)
     except ValueError:
         return '', 400
     email = data['customer']['email']
-    if email == "":
-        return jsonify({ 'html': '<span style="color:red;">Cannot pull data</span>' })
+    if email == "" or request.headers.get('X-Helpscout-Signature') == None:
+        message = { 'message': 'Cannot process this request.'}
+        template = app.jinja_env.get_template('errors.html')
+        return jsonify({ 'html': template.render(message) })
     else:
-        try:
-            print request.headers
-            resp = api.get('lead', params={ 'query': 'email_address:"%s" sort:-"Monthly Billable Amount"' % email })
-        except APIError as e:
-            return jsonify({ 'html': '<span style="color:red;">There was a Close.io API Error</span>' })
+        url = "https://app.close.io/api/v1/lead/"
+        resp = requests.get(url, params={ 'query': 'email_address:"%s" sort:-contacts,-created' % email }, headers=headers)
+        if resp.status_code != 200:
+            message = { 'message': 'There was a Close API Error. Please check your API Key and reload the page.'}
+            template = app.jinja_env.get_template('errors.html')
+            return jsonify({ 'html': template.render(message) })
     if len(resp['data']) > 0:
         lead = resp['data'][0]
+        org = requests.get('https://app.close.io/api/v1/organization/%s/' % lead.get('organization_id'), headers=headers, params={ '_fields': 'memberships,inactive_memberships' })
+        if org.status_code != 200:
+            message = { 'message': 'There was a Close API Error. Please check your API Key and reload the page.'}
+            template = app.jinja_env.get_template('errors.html')
+            return jsonify({ 'html': template.render(message) })
+        memberships = [i for i in org['memberships']] + [i for i in org['inactive_memberships']]
+        users = {}
+        for member in memberships:
+            users[member['user_id']] = member['user_full_name']
         for key in lead['custom']:
-            if str(lead['custom'][key]).startswith('user_'):
+            if str(lead['custom'][key]).startswith('user_') and str(lead['custom'][key]) in users:
                 lead['custom'][key] = users[lead['custom'][key]]
         template = app.jinja_env.get_template('has_lead.html')
         return jsonify({'html': template.render(lead)})
@@ -45,13 +47,13 @@ def index():
 # Create Lead Route
 @app.route('/create-lead/', methods=['GET'])
 def index2():
-    print request.headers
+    headers = {'Content-Type': 'application/json', 'Authorization': 'Basic %s' % request.headers.get('X-Helpscout-Signature')}
     contact = { 'emails': [{'email': request.args.get("email")}]}
     contact['name'] = "%s %s" % (request.args.get("fname"), request.args.get("lname"))
     lead = { 'contacts': [contact] }
-    try:
-        resp = api.post('lead', data=lead)
+    resp = requests.post('https://app.close.io/api/v1/lead/', json=lead, headers=headers)
+    if resp.status_code == 200:
         return redirect("https://app.close.io/lead/%s/" % resp['id'], code=302)
-    except APIError as e:
         # This will bring Close.io to an error page if lead creation fails
+    else:
         return redirect("https://app.close.io/lead//", code=302)
