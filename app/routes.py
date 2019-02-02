@@ -52,7 +52,7 @@ def index():
 # Create Lead Route
 @app.route('/create-lead/', methods=['GET'])
 def index2():
-    close_key = Fernet(base64.b64encode(os.environ['secret_key'])).decrypt(request.args.get('close_key'))
+    close_key = Fernet(base64.b64encode(os.environ['secret_key'])).decrypt(request.args.get('close_key').encode())
     headers = {'Content-Type': 'application/json', 'Authorization': 'Basic %s' % close_key}
     contact = { 'emails': [{'email': request.args.get("email")}]}
     contact['name'] = "%s %s" % (request.args.get("fname"), request.args.get("lname"))
