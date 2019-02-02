@@ -19,18 +19,20 @@ def index():
         return jsonify({ 'html': template.render(message) })
     else:
         url = "https://app.close.io/api/v1/lead/"
-        resp = requests.get(url, params={ 'query': 'email_address:"%s" sort:-contacts,-created' % email }, headers=headers)
-        if resp.status_code != 200:
+        lead_get = requests.get(url, params={ 'query': 'email_address:"%s" sort:-contacts,-created' % email }, headers=headers)
+        if lead_get.status_code != 200:
             message = { 'message': 'There was a Close API Error. Please check your API Key and reload the page.'}
             template = app.jinja_env.get_template('errors.html')
             return jsonify({ 'html': template.render(message) })
+    resp = lead_get.json()
     if len(resp['data']) > 0:
         lead = resp['data'][0]
-        org = requests.get('https://app.close.io/api/v1/organization/%s/' % lead.get('organization_id'), headers=headers, params={ '_fields': 'memberships,inactive_memberships' })
-        if org.status_code != 200:
+        org_get = requests.get('https://app.close.io/api/v1/organization/%s/' % lead.get('organization_id'), headers=headers, params={ '_fields': 'memberships,inactive_memberships' })
+        if org_get.status_code != 200:
             message = { 'message': 'There was a Close API Error. Please check your API Key and reload the page.'}
             template = app.jinja_env.get_template('errors.html')
             return jsonify({ 'html': template.render(message) })
+        org = org_get.json()
         memberships = [i for i in org['memberships']] + [i for i in org['inactive_memberships']]
         users = {}
         for member in memberships:
@@ -53,7 +55,7 @@ def index2():
     lead = { 'contacts': [contact] }
     resp = requests.post('https://app.close.io/api/v1/lead/', json=lead, headers=headers)
     if resp.status_code == 200:
-        return redirect("https://app.close.io/lead/%s/" % resp['id'], code=302)
+        return redirect("https://app.close.io/lead/%s/" % resp.json()['id'], code=302)
         # This will bring Close.io to an error page if lead creation fails
     else:
         return redirect("https://app.close.io/lead//", code=302)
