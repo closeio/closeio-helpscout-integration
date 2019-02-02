@@ -46,7 +46,7 @@ def index():
         return jsonify({'html': template.render(lead)})
     else:
         template = app.jinja_env.get_template('no_lead.html')
-        data['customer']['close_key'] = Fernet(base64.b64encode(os.environ['secret_key'])).encrytpt(request.headers.get('X-Helpscout-Signature').encode())
+        data['customer']['close_key'] = Fernet(base64.b64encode(os.environ['secret_key'])).encrypt(request.headers.get('X-Helpscout-Signature').encode())
         return jsonify({'html': template.render(data['customer'])})
 
 # Create Lead Route
