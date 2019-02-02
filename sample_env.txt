@@ -1,3 +1,0 @@
-# Sample keys file
-
-SECRET_KEY='SECRET KEY'

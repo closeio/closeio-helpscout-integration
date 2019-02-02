@@ -3,6 +3,8 @@ from flask import render_template, redirect, url_for, flash, request, jsonify
 from app import app
 import json
 import requests
+from cryptography.fernet import Fernet
+import base64
 
 @app.route('/', methods=['POST'])
 def index():
@@ -44,13 +46,14 @@ def index():
         return jsonify({'html': template.render(lead)})
     else:
         template = app.jinja_env.get_template('no_lead.html')
-        data['customer']['api_key'] = request.headers.get('X-Helpscout-Signature')
+        data['customer']['close_key'] = Fernet(base64.b64encode(os.environ['secret_key'])).encrytpt(request.headers.get('X-Helpscout-Signature').encode())
         return jsonify({'html': template.render(data['customer'])})
 
 # Create Lead Route
 @app.route('/create-lead/', methods=['GET'])
 def index2():
-    headers = {'Content-Type': 'application/json', 'Authorization': 'Basic %s' % request.args.get('api_key')}
+    close_key = Fernet(base64.b64encode(os.environ['secret_key'])).decrypt(request.args.get('close_key'))
+    headers = {'Content-Type': 'application/json', 'Authorization': 'Basic %s' % close_key}
     contact = { 'emails': [{'email': request.args.get("email")}]}
     contact['name'] = "%s %s" % (request.args.get("fname"), request.args.get("lname"))
     lead = { 'contacts': [contact] }
