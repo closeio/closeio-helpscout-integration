@@ -6,12 +6,14 @@
     </div>
     <div class="c-sb-section__body">
 <ul class="c-sb-list c-sb-list--two-line">
-  <li class="c-sb-list-item">
-    <span class="c-sb-list-item__label">
-    Description
-      <span class="c-sb-list-item__text">{{description}}</span>
-    </span>
-  </li>
+  {% if description|length > 0 %}
+    <li class="c-sb-list-item">
+      <span class="c-sb-list-item__label">
+      Description
+        <span class="c-sb-list-item__text">{{description}}</span>
+      </span>
+    </li>
+  {% endif %}
   <li class="c-sb-list-item">
     <span class="c-sb-list-item__label">
     Lead Status
