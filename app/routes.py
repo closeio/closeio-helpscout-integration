@@ -44,12 +44,13 @@ def index():
         return jsonify({'html': template.render(lead)})
     else:
         template = app.jinja_env.get_template('no_lead.html')
+        data['customer']['api_key'] = request.headers.get('X-Helpscout-Signature')
         return jsonify({'html': template.render(data['customer'])})
 
 # Create Lead Route
 @app.route('/create-lead/', methods=['GET'])
 def index2():
-    headers = {'Content-Type': 'application/json', 'Authorization': 'Basic %s' % request.headers.get('X-Helpscout-Signature')}
+    headers = {'Content-Type': 'application/json', 'Authorization': 'Basic %s' % request.args.get('api_key')}
     contact = { 'emails': [{'email': request.args.get("email")}]}
     contact['name'] = "%s %s" % (request.args.get("fname"), request.args.get("lname"))
     lead = { 'contacts': [contact] }
