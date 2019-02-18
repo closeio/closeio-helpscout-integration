@@ -42,6 +42,7 @@ def index():
         for key in lead['custom']:
             if str(lead['custom'][key]).startswith('user_') and str(lead['custom'][key]) in users:
                 lead['custom'][key] = users[lead['custom'][key]]
+        lead['keys_sorted'] = sorted(lead['custom'].keys(), key=unicode.lower)
         template = app.jinja_env.get_template('has_lead.html')
         return jsonify({'html': template.render(lead)})
     else:
