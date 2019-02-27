@@ -20,7 +20,7 @@ def index():
         template = app.jinja_env.get_template('errors.html')
         return jsonify({ 'html': template.render(message) })
     else:
-        url = "https://app.close.io/api/v1/lead/"
+        url = "https://api.close.com/api/v1/lead/"
         lead_get = requests.get(url, params={ 'query': 'email_address:"%s" sort:-contacts,-created' % email }, headers=headers)
         if lead_get.status_code != 200:
             message = { 'message': 'There was a Close API Error. Please check your API Key and reload the page.'}
@@ -29,7 +29,7 @@ def index():
     resp = lead_get.json()
     if len(resp['data']) > 0:
         lead = resp['data'][0]
-        org_get = requests.get('https://app.close.io/api/v1/organization/%s/' % lead.get('organization_id'), headers=headers, params={ '_fields': 'memberships,inactive_memberships' })
+        org_get = requests.get('https://api.close.com/api/v1/organization/%s/' % lead.get('organization_id'), headers=headers, params={ '_fields': 'memberships,inactive_memberships' })
         if org_get.status_code != 200:
             message = { 'message': 'There was a Close API Error. Please check your API Key and reload the page.'}
             template = app.jinja_env.get_template('errors.html')
@@ -58,7 +58,7 @@ def index2():
     contact = { 'emails': [{'email': request.args.get("email")}]}
     contact['name'] = "%s %s" % (request.args.get("fname"), request.args.get("lname"))
     lead = { 'contacts': [contact] }
-    resp = requests.post('https://app.close.io/api/v1/lead/', json=lead, headers=headers)
+    resp = requests.post('https://api.close.com/api/v1/lead/', json=lead, headers=headers)
     if resp.status_code == 200:
         return redirect("https://app.close.io/lead/%s/" % resp.json()['id'], code=302)
         # This will bring Close.io to an error page if lead creation fails
