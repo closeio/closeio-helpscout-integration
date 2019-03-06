@@ -4,6 +4,7 @@ from app import app
 import json
 import requests
 from cryptography.fernet import Fernet
+from methods import generate_search_link
 import base64
 
 @app.route('/', methods=['POST'])
@@ -43,6 +44,8 @@ def index():
             if str(lead['custom'][key]).startswith('user_') and str(lead['custom'][key]) in users:
                 lead['custom'][key] = users[lead['custom'][key]]
         lead['keys_sorted'] = sorted(lead['custom'].keys(), key=unicode.lower)
+        if len(lead['contacts']) > 0:
+            lead['helpscout_search_link'] = generate_search_link(lead['contacts'])
         template = app.jinja_env.get_template('has_lead.html')
         return jsonify({'html': template.render(lead)})
     else:
