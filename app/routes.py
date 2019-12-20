@@ -41,8 +41,9 @@ def index():
         for member in memberships:
             users[member['user_id']] = member['user_full_name']
         for key in lead['custom']:
-            if str(lead['custom'][key]).startswith('user_') and str(lead['custom'][key]) in users:
-                lead['custom'][key] = users[lead['custom'][key]]
+            if isinstance(lead['custom'][key], basestring):
+                if lead['custom'][key].startswith('user_') and lead['custom'][key] in users:
+                    lead['custom'][key] = users[lead['custom'][key]]
         lead['keys_sorted'] = sorted(lead['custom'].keys(), key=unicode.lower)
         if len(lead['contacts']) > 0:
             lead['helpscout_search_link'] = generate_search_link(lead['contacts'])
